@@ -255,12 +255,16 @@ def chart_to_sm(infile):
 		while len(line) > 0 and not reline:
 			line = chartfile.readline()
 			reline = re.search("Resolution = (\d+)", line)
-		chart_resolution = int(reline.group(1))
+		try:
+			chart_resolution = int(reline.group(1))
+		except:
+			chart_resolution = 192
 		measure_length = chart_resolution * 4
 	
 	# look for [SyncTrack] and BPMs
 	bpms = "#BPMS:"
 	with open(infile, "r", encoding=infile_encoding) as chartfile:
+		bpm = None
 		line = "\n"
 		while len(line) > 0 and line.find("[SyncTrack]") < 0:
 			line = chartfile.readline()
@@ -272,6 +276,11 @@ def chart_to_sm(infile):
 				index = float(reline.group(1)) / chart_resolution
 				bpm = float(reline.group(2)) / 1000
 				bpms += "{}={},".format(index, bpm)
+		# handle case where no bpms were found
+		if bpm == None:
+			index = 0
+			bpm = 120
+			bpms += "{}={},".format(index, bpm)
 	# add semicolon to end of BPM header entry
 	bpms = bpms[:-1] + ";\n"
 
@@ -359,7 +368,7 @@ def mid_to_sm(infile):
 		mid = mido.MidiFile(infile)
 	except:
 		traceback.print_exc()
-		print("Failed to process {}".format(infile))
+		print("Failed to load {}".format(infile))
 		return 1
 	track_tempomap = None
 	track_guitar = None
@@ -402,12 +411,18 @@ def mid_to_sm(infile):
 	# parse tempomap
 	bpms = "#BPMS:"
 	current_tick = 0
+	bpm = None
 	for msg in track_tempomap:
 		current_tick += msg.time
 		if msg.type == "set_tempo":
 			index = current_tick / chart_resolution
 			bpm = mido.tempo2bpm(msg.tempo)
 			bpms += "{}={},".format(index, bpm)
+	# handle case where no bpms were found
+	if bpm == None:
+		index = 0
+		bpm = 120
+		bpms += "{}={},".format(index, bpm)
 	# add semicolon to end of BPM header entry
 	bpms = bpms[:-1] + ";\n"
 	
