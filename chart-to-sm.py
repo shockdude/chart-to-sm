@@ -1,3 +1,5 @@
+# -*- coding: UTF-8 -*-
+
 # chart-to-sm.py converter
 # Copyright (C) 2021 shockdude
 
@@ -161,7 +163,7 @@ def chart_get_notes(infile, diff_map, diff_value, measure_length):
 	notes = {}
 	last_note = 0
 	ch_diff, sm_diff = diff_map # e.g. [ExpertSingle], Challenge:
-	with open(infile, "r") as chartfile:
+	with open(infile, "r", encoding="utf-8") as chartfile:
 		line = "\n"
 		while len(line) > 0 and line.find(ch_diff) < 0: # e.g. [ExpertSingle]
 			line = chartfile.readline()
@@ -210,7 +212,7 @@ def chart_to_sm(infile):
 	# look for [Song] and chart resolution
 	chart_resolution = 0
 	measure_length = 0
-	with open(infile, "r") as chartfile:
+	with open(infile, "r", encoding="utf-8") as chartfile:
 		line = "\n"
 		while len(line) > 0 and line.find("[Song]") < 0:
 			line = chartfile.readline()
@@ -223,7 +225,7 @@ def chart_to_sm(infile):
 	
 	# look for [SyncTrack] and BPMs
 	bpms = "#BPMS:"
-	with open(infile, "r") as chartfile:
+	with open(infile, "r", encoding="utf-8") as chartfile:
 		line = "\n"
 		while len(line) > 0 and line.find("[SyncTrack]") < 0:
 			line = chartfile.readline()
@@ -245,7 +247,7 @@ def chart_to_sm(infile):
 		return sm_header
 
 	# write simfile
-	with open("notes.sm", "w") as outfile:
+	with open("notes.sm", "w", encoding="utf-8") as outfile:
 		outfile.write(sm_header)					
 		for diffmap in DIFFMAPPINGS:
 			sm_notes = chart_get_notes(infile, diffmap, diff_guitar, measure_length)
@@ -375,7 +377,7 @@ def mid_to_sm(infile):
 	if type(sm_header) == int:
 		return sm_header
 
-	with open("notes.sm", "w") as outfile:
+	with open("notes.sm", "w", encoding="utf-8") as outfile:
 		outfile.write(sm_header)					
 		for diffmap in MIDDIFFMAPPINGS:
 			sm_notes = mid_get_notes(track_notes, diffmap, diff_guitar, measure_length)
@@ -416,6 +418,11 @@ def scan_folder(in_folder):
 		handle_file(NOTES_NAME+CHART_EXT)
 
 def main():
+	# force utf-8 in stdout
+	if not sys.stdout.isatty():
+		sys.stdout.reconfigure(encoding='utf-8')
+		sys.stderr.reconfigure(encoding='utf-8')
+
 	if len(sys.argv) < 2:
 		print("Error: not enough arguments")
 		usage()
