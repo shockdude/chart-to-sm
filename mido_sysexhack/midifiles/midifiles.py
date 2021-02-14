@@ -205,7 +205,9 @@ def read_track(infile, debug=False, clip=False):
             peek_data = [status_byte]
             status_byte = last_status
         else:
-            if status_byte != 0xff:
+            # HACK: don't set running status byte for sysex
+            #if status_byte != 0xff:
+            if status_byte not in (0xff, 0xf0, 0xf7):
                 # Meta messages don't set running status.
                 last_status = status_byte
             peek_data = []
