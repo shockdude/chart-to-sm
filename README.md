@@ -5,9 +5,10 @@ Supports both .mid and .chart files
 Usage: Drag-and-drop the chart file or chart folder onto `chart-to-sm.exe` \
 Or use the command line: `python chart-to-sm.py notes.chart`
 
-Extremely hacky with barely any error handling, but should work for most CH chart folders \
+A bit hacky, but should work for most CH chart folders \
 containing a `notes.chart`/`notes.mid` and a `song.ini`. \
-Can also scan & batch convert multiple charts in a folder.
+Can also scan & batch convert multiple charts in a folder. \
+Note: Currently does not merge audio stems into a single audio track
 
 Written by shockdude in Python 3.7 \
 Original chart-to-sm.js by Paturages \

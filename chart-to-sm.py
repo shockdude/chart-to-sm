@@ -95,12 +95,11 @@ def output_sm(notes, last_note, measure_length, sm_diff, diff_value):
 		# write chart & difficulty info
 		sm_notes += "\n"
 		sm_notes += "//---------------bass-six - ----------------\n"
+		sm_notes += "#NOTEDATA:;\n"
+		sm_notes += "#STEPSTYPE:bass-six;\n"
+		sm_notes += "#DIFFICULTY:{};\n".format(sm_diff)
+		sm_notes += "#METER:{};\n".format(diff_value)
 		sm_notes += "#NOTES:\n"
-		sm_notes += "     bass-six:\n"
-		sm_notes += "     :\n"
-		sm_notes += "     {}:\n".format(sm_diff) # e.g. Challenge:
-		sm_notes += "     {}:\n".format(diff_value)
-		sm_notes += "     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0:\n" # empty groove radar
 
 		# add notes for each measure
 		for measure_start in range(0, last_note + measure_length, measure_length):
@@ -135,7 +134,10 @@ def process_song_ini(bpms):
 			for line in songini_file:
 				split_line = line.split("=", 1)
 				if len(split_line) == 2:
-					songdata[split_line[0].strip().lower()] = split_line[1].strip()
+					songdata_key = split_line[0].strip().lower()
+					songdata_value = split_line[1].strip()
+					if songdata_key not in songdata:
+						songdata[songdata_key] = songdata_value
 	except:
 		traceback.print_exc()
 		print("Failed to parse song.ini")
@@ -148,7 +150,7 @@ def process_song_ini(bpms):
 			if song_file == None:
 				song_file = file
 			else:
-				print("Warning: found song {} & stem {}. Stems currently not supported in SM".format(song_file, file))
+				print("Warning: found {} & {}. Stems currently not supported in SM".format(song_file, file))
 	if song_file == None:
 		print("Warning: Audio file not found for chart")
 		song_file = "song.ogg"
@@ -163,6 +165,7 @@ def process_song_ini(bpms):
 					("charter", "#CREDIT"))
 
 	# write .sm header
+	sm_header += "#VERSION:0.83;\n"
 	for mapping in inimappings:
 		if mapping[0] in songdata:
 			sm_header += "{}:{};\n".format(mapping[1], songdata[mapping[0]])
@@ -170,13 +173,19 @@ def process_song_ini(bpms):
 	sm_header += "#CDTITLE:album.png;\n"
 	sm_header += "#MUSIC:{};\n".format(song_file)
 	if "preview_start_time" in songdata:
-		sm_header += "#SAMPLESTART:{};\n".format(float(songdata["preview_start_time"])/1000)
+		try:
+			sm_header += "#SAMPLESTART:{};\n".format(float(songdata["preview_start_time"])/1000)
+		except:
+			pass
 	sm_header += bpms
 
 	# get guitar difficulty
 	if "diff_guitar" in songdata:
-		diff_guitar = int(songdata["diff_guitar"])
-		if diff_guitar < 1:
+		try:
+			diff_guitar = int(songdata["diff_guitar"])
+			if diff_guitar < 1:
+				diff_guitar = 1
+		except:
 			diff_guitar = 1
 	else:
 		diff_guitar = 1
@@ -273,7 +282,7 @@ def chart_to_sm(infile):
 		return sm_header
 
 	# write simfile
-	with open("notes.sm", "w", encoding="utf-8") as outfile:
+	with open("notes.ssc", "w", encoding="utf-8") as outfile:
 		outfile.write(sm_header)					
 		for diffmap in DIFFMAPPINGS:
 			sm_notes = chart_get_notes(infile, diffmap, diff_guitar, measure_length, infile_encoding)
@@ -408,7 +417,7 @@ def mid_to_sm(infile):
 	if type(sm_header) == int:
 		return sm_header
 
-	with open("notes.sm", "w", encoding="utf-8") as outfile:
+	with open("notes.ssc", "w", encoding="utf-8") as outfile:
 		outfile.write(sm_header)					
 		for diffmap in MIDDIFFMAPPINGS:
 			sm_notes = mid_get_notes(track_notes, diffmap, diff_guitar, measure_length)
@@ -421,7 +430,7 @@ def usage():
 	print("Clone Hero Chart to SM converter")
 	print("Usage: {} [chart]".format(sys.argv[0]))
 	print("where [chart] is a .chart or .mid file, or a folder containing CH charts")
-	print("Outputs a \"notes.sm\" file in the same folder as the chart")
+	print("Outputs a \"notes.ssc\" file in the same folder as the chart")
 	sys.exit(1)
 
 def handle_file(infile):
