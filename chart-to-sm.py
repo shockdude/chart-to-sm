@@ -442,7 +442,7 @@ def mid_to_sm(infile):
 	return 0
 
 def usage():
-	print("Clone Hero Chart to SM converter")
+	print("Clone Hero Chart to SM converter {}".format(VERSION))
 	print("Usage: {} [chart]".format(sys.argv[0]))
 	print("where [chart] is a .chart or .mid file, or a folder containing CH charts")
 	print("Outputs a \"notes.ssc\" file in the same folder as the chart")
